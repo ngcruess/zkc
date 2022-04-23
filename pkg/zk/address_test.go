@@ -92,3 +92,21 @@ func TestAncestorAtDepth(t *testing.T) {
 		})
 	}
 }
+
+func TestAncestry(t *testing.T) {
+	// SETUP
+	address := zk.Address("1a42b7")
+	expected := []zk.Address{
+		zk.Address("1"),
+		zk.Address("1a"),
+		zk.Address("1a42"),
+		zk.Address("1a42b"),
+		address,
+	}
+
+	// ACTION
+	ancestors := address.Ancestry()
+
+	// ASSERTION
+	assert.Equal(t, expected, ancestors)
+}
