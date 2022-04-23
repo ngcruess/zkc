@@ -11,10 +11,10 @@ func TestAddChild(t *testing.T) {
 	// SETUP
 	origin := prepareOrigin()
 
-	child := zk.NewZettel(zk.Address("1"), "child")
+	child := zk.NewZettel(zk.Address("1"), "child", "", "")
 
 	// ACTION
-	origin.AddChild(child)
+	origin.AddChildWithAddress(child)
 
 	// ASSERTIONS
 	actual, ok := origin.Children[child.Address]
@@ -29,7 +29,7 @@ func TestAddDescendant(t *testing.T) {
 	origin := prepareTree()
 
 	// ACTION
-	descendant := zk.NewZettel(zk.Address("1c"), "1c")
+	descendant := zk.NewZettel(zk.Address("1c"), "1c", "", "")
 	err := origin.AddDescendent(origin, 1, descendant)
 
 	// ASSERTIONS
@@ -55,18 +55,18 @@ func TestGetDescendentByAddress(t *testing.T) {
 }
 
 func prepareOrigin() *zk.Zettel {
-	return zk.NewZettel(zk.Address("0"), "origin")
+	return zk.NewZettel(zk.Address("0"), "origin", "", "")
 }
 
 func prepareTree() *zk.Zettel {
 	origin := prepareOrigin()
 	origin.Children = map[zk.Address]*zk.Zettel{
-		zk.Address("1"): zk.NewZettel(zk.Address("1"), "1"),
-		zk.Address("2"): zk.NewZettel(zk.Address("2"), "2"),
+		zk.Address("1"): zk.NewZettel(zk.Address("1"), "1", "", ""),
+		zk.Address("2"): zk.NewZettel(zk.Address("2"), "2", "", ""),
 	}
 	origin.Children[zk.Address("1")].Children = map[zk.Address]*zk.Zettel{
-		zk.Address("1a"): zk.NewZettel(zk.Address("1a"), "1a"),
-		zk.Address("1b"): zk.NewZettel(zk.Address("1b"), "1b"),
+		zk.Address("1a"): zk.NewZettel(zk.Address("1a"), "1a", "", ""),
+		zk.Address("1b"): zk.NewZettel(zk.Address("1b"), "1b", "", ""),
 	}
 	return origin
 }

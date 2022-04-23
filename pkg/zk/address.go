@@ -3,12 +3,14 @@ package zk
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
-const pattern string = "([a-z]+)|([1-9]+)"
-
-var re *regexp.Regexp // lazy loaded
+const (
+	partsPattern     string = "([a-z]+)|([1-9]+)"
+	endDigitsPattern string = "\\w*?(?[0-9]+)$"
+)
 
 type Address string
 
@@ -42,8 +44,9 @@ func (a Address) AncestorAtDepth(depth int) (*Address, error) {
 //
 // Example: "1a42b7".Parts = ["1", "a", "42", "b", "7"]
 func (a Address) Parts() []string {
+	re := regexp.MustCompile(partsPattern)
 	if re == nil {
-		re = regexp.MustCompile(pattern)
+		re = regexp.MustCompile(partsPattern)
 	}
 	return re.FindAllString(string(a), -1)
 }
@@ -60,4 +63,27 @@ func (a Address) Ancestry() []Address {
 		ancestors[i] = Address(strings.Join(parts[:i+1], ""))
 	}
 	return ancestors
+}
+
+// `Increment` returns a new Address which is one larger, in Zettel semantics, than
+// the receiving Address.
+// Returns:
+//	- the new Address
+// Examples:
+// 	- "1".Increment = "2"
+// 	- "1a".Increment = "1b"
+// 	- "1z".Increment = "1za"
+// 	- "1a47".Increment = "1a48"
+func (a Address) Increment() Address {
+	parts := a.Parts()
+	last := parts[len(parts)-1]
+	if strings.HasSuffix(last, "z") {
+		return Address(string(a) + "a")
+	}
+	// the current part is numeric, so just add 1
+	if i, err := strconv.Atoi(last); err == nil {
+		return Address(strings.Join(parts[:len(parts)-1], "") + fmt.Sprint(i+1))
+	}
+	incremented := last[len(last)-1] + 1
+	return Address(string(a)[:len(a)-1] + string(incremented))
 }

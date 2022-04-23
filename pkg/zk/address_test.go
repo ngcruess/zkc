@@ -9,11 +9,11 @@ import (
 
 func TestParts(t *testing.T) {
 	// SETUP
-	type AddressPartsPair struct {
+	type addressPartsPair struct {
 		address zk.Address
 		parts   []string
 	}
-	tests := []AddressPartsPair{
+	tests := []addressPartsPair{
 		{
 			address: zk.Address("1"),
 			parts:   []string{"1"},
@@ -41,13 +41,13 @@ func TestParts(t *testing.T) {
 
 func TestAncestorAtDepth(t *testing.T) {
 	// SETUP
-	type AncestorTestConf struct {
+	type ancestorTestConf struct {
 		address  zk.Address
 		depth    int
 		ancestor zk.Address
 		fails    bool
 	}
-	tests := []AncestorTestConf{
+	tests := []ancestorTestConf{
 		{
 			address:  zk.Address("1"),
 			depth:    0,
@@ -109,4 +109,44 @@ func TestAncestry(t *testing.T) {
 
 	// ASSERTION
 	assert.Equal(t, expected, ancestors)
+}
+
+func TestIncrement(t *testing.T) {
+	// SETUP
+	type originalIncrementedPair struct {
+		original zk.Address
+		expected zk.Address
+	}
+	tests := []originalIncrementedPair{
+		{
+			original: zk.Address("1a42b7"),
+			expected: zk.Address("1a42b8"),
+		},
+		{
+			original: zk.Address("1a"),
+			expected: zk.Address("1b"),
+		},
+		{
+			original: zk.Address("1z"),
+			expected: zk.Address("1za"),
+		},
+		{
+			original: zk.Address("1ay"),
+			expected: zk.Address("1az"),
+		},
+		{
+			original: zk.Address("1a42b77"),
+			expected: zk.Address("1a42b78"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(string(test.original), func(t *testing.T) {
+			// ACTION
+			actual := test.original.Increment()
+
+			// ASSERTION
+			assert.Equal(t, test.expected, actual)
+		})
+	}
 }

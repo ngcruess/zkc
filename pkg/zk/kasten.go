@@ -12,10 +12,10 @@ import "time"
 // Key Zettel features are exposed here with wrapper methods that call their respective Zettel
 // implementations and also ensure the metadata fields of the Kasten are kept up to date.
 type Kasten struct {
-	Label              string               `json:"label"`
-	Origin             *Zettel              `json:"origin"`
-	CreatedAt          time.Time            `json:"created_at"`
-	UpdatedAt          time.Time            `json:"updated_at"`
-	SemanticOrder      map[Address]struct{} `json:"semantic_order"`
-	ChronologicalOrder map[Address]struct{} `json:"chronological_order"`
+	Label              string    `json:"label"`
+	Origin             *Zettel   `json:"origin"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+	SemanticOrder      []Address `json:"semantic_order"`
+	ChronologicalOrder []Address `json:"chronological_order"`
 }
