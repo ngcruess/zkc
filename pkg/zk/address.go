@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	partsPattern     string = "([a-z]+)|([1-9]+)"
+	partsPattern     string = "([a-z]+)|([0-9]+)"
 	endDigitsPattern string = "\\w*?(?[0-9]+)$"
 )
 

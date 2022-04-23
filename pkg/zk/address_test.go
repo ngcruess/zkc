@@ -119,6 +119,10 @@ func TestIncrement(t *testing.T) {
 	}
 	tests := []originalIncrementedPair{
 		{
+			original: zk.Address("0"),
+			expected: zk.Address("1"),
+		},
+		{
 			original: zk.Address("1a42b7"),
 			expected: zk.Address("1a42b8"),
 		},
