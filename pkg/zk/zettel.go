@@ -6,12 +6,14 @@ import (
 )
 
 type Zettel struct {
-	Address   `json:"address"`
-	Body      string              `json:"body"`
-	CreatedAt time.Time           `json:"created_at"`
-	UpdatedAt time.Time           `json:"updated_at"`
-	Parent    *Zettel             `json:"parent"`
-	Children  map[Address]*Zettel `json:"children"`
+	Address    `json:"address"`
+	Body       string              `json:"body"`
+	References string              `json:"references"`
+	CreatedAt  time.Time           `json:"created_at"`
+	UpdatedAt  time.Time           `json:"updated_at"`
+	Parent     *Zettel             `json:"parent"`
+	Children   map[Address]*Zettel `json:"children"`
+	Related    []Address           `json:"related"`
 }
 
 // `AddChild` adds a child to a Zettel, making sure the specified Address is not already occupied
