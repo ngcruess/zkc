@@ -14,16 +14,21 @@ type Zettel struct {
 	Children  map[Address]*Zettel `json:"children"`
 }
 
-func (z *Zettel) AddChild(zettel Zettel) *Zettel {
+// Adds a child to a Zettel, making sure the specified Address is not already occupied
+// This is where the uniqueness of Addresses within a collection is enforced
+func (z *Zettel) AddChild(zettel Zettel) error {
 	if z.Children == nil {
 		z.Children = map[Address]*Zettel{
 			zettel.Address: &zettel,
 		}
 	} else {
+		if _, ok := z.Children[zettel.Address]; ok {
+			return fmt.Errorf("zettel already exists with address %v", zettel.Address)
+		}
 		z.Children[zettel.Address] = &zettel
 	}
 	zettel.Parent = z
-	return &zettel
+	return nil
 }
 
 func NewZettel(address Address, body string) (*Zettel, error) {
@@ -45,9 +50,7 @@ func (z *Zettel) AddDescendent(cur *Zettel, depth int, newZ Zettel) error {
 	if inner, ok := cur.Children[*addr]; ok {
 		return z.AddDescendent(inner, depth+1, newZ)
 	} else if *addr == z.Address {
-		cur.AddChild(newZ)
-		newZ.Parent = cur
-		return nil
+		return cur.AddChild(newZ)
 	} else {
 		return fmt.Errorf("invalid address for new zettel: %s", newZ.Address)
 	}
