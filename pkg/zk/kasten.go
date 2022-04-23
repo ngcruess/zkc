@@ -19,3 +19,28 @@ type Kasten struct {
 	SemanticOrder      []Address `json:"semantic_order"`
 	ChronologicalOrder []Address `json:"chronological_order"`
 }
+
+// `NewKasten` returns a new Kasten. The origin is the
+// global parent, the Zettel with Address="0" and no Parent.
+// CreatedAt and UpdatedAt will both be the current time in the
+// current time zone. The Semantic and Chronological orders arrays
+// will be populated with the Address of the Origin.
+// Returns:
+//	- the new Kasten
+func NewKasten(label string) *Kasten {
+	now := time.Now()
+	address := Address("0")
+	return &Kasten{
+		Label: label,
+		Origin: &Zettel{
+			Address:            address,
+			CreatedAt:          now,
+			UpdatedAt:          now,
+			LatestChildAddress: address,
+		},
+		CreatedAt:          now,
+		UpdatedAt:          now,
+		SemanticOrder:      []Address{address},
+		ChronologicalOrder: []Address{address},
+	}
+}
