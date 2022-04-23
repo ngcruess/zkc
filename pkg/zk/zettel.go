@@ -32,7 +32,6 @@ func (z *Zettel) AddChildWithAddress(zettel *Zettel) error {
 		}
 		z.Children[zettel.Address] = zettel
 	}
-	z.LatestChildAddress = zettel.Address
 	return nil
 }
 
@@ -47,7 +46,6 @@ func (z *Zettel) NewChild(body string, references string, related ...Address) (*
 	if err != nil {
 		return nil, err
 	}
-	z.LatestChildAddress = address
 	return newZ, nil
 }
 
@@ -69,6 +67,7 @@ func (z *Zettel) NewZettel(address Address, body string, references string, rela
 		LatestChildAddress: address,
 		Parent:             z,
 	}
+	z.LatestChildAddress = address
 	return &newZ
 }
 

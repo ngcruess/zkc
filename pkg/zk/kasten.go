@@ -1,6 +1,9 @@
 package zk
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // A `Kasten` is a container and metastore for the for the Zettel tree.
 // It's main functional purpose is to keep sets of all Addresses in orders commonly required
@@ -43,4 +46,30 @@ func NewKasten(label string) *Kasten {
 		SemanticOrder:      []Address{address},
 		ChronologicalOrder: []Address{address},
 	}
+}
+
+func (k *Kasten) NewChild(body string, references string, related ...Address) (*Zettel, error) {
+	z, err := k.Origin.NewChild(body, references, related...)
+	if err == nil {
+		k.SemanticOrder, _ = InsertIntoSemanticOrder(k.SemanticOrder, z)
+		k.ChronologicalOrder = append([]Address{z.Address}, k.ChronologicalOrder...)
+		k.UpdatedAt = time.Now()
+	}
+	return z, err
+}
+
+func InsertIntoSemanticOrder(semanticOrder []Address, z *Zettel) ([]Address, error) {
+	for i, a := range semanticOrder {
+		if a == z.Parent.LatestChildAddress {
+			if i == len(semanticOrder)-1 {
+				return append(semanticOrder, z.Address), nil
+			}
+			semanticOrder = append(semanticOrder[:i+1], semanticOrder[i:]...) // index < len(a)
+			semanticOrder[i+1] = z.Address
+			return semanticOrder, nil
+		}
+	}
+	// the only way for this to happen is that a Zettel's parent Zettel has not had it's
+	// LatestChildAddress set or has had it set to something invalid
+	return nil, fmt.Errorf("failed to insert address %v into semantic order", z.Address)
 }
