@@ -14,8 +14,8 @@ type Zettel struct {
 	Children  map[Address]*Zettel `json:"children"`
 }
 
-// Adds a child to a Zettel, making sure the specified Address is not already occupied
-// This is where the uniqueness of Addresses within a collection is enforced
+// `AddChild` adds a child to a Zettel, making sure the specified Address is not already occupied
+// This is where the uniqueness of Addresses within a collection is enforced.
 // Returns:
 // 	- error if the Address of the given Zettel is not unique, or `nil`
 func (z *Zettel) AddChild(zettel *Zettel) error {
@@ -33,9 +33,9 @@ func (z *Zettel) AddChild(zettel *Zettel) error {
 	return nil
 }
 
-// Create a new Zettel with the given Address and body, automatically
+// `NewZettel` creates a new Zettel with the given Address and body, automatically
 // setting the `CreatedAt` and `UpdatedAt` values to the current time in the
-// current time zone
+// current time zone.
 // Returns:
 // 	- a pointer to the new Zettel
 func NewZettel(address Address, body string) *Zettel {
@@ -48,8 +48,8 @@ func NewZettel(address Address, body string) *Zettel {
 	return &newZ
 }
 
-// Uses the Address of the given Zettel to insert it into the correct place
-// in the tree
+// `AddDescendent` uses the Address of the given Zettel to insert it into the correct place
+// in the tree.
 // Returns:
 // 	- error if the Address of the given Zettel is invalid or `nil`
 func (z *Zettel) AddDescendent(cur *Zettel, depth int, newZ *Zettel) error {
@@ -58,11 +58,31 @@ func (z *Zettel) AddDescendent(cur *Zettel, depth int, newZ *Zettel) error {
 	if err != nil {
 		return err
 	}
+	if *addr == newZ.Address {
+		return cur.AddChild(newZ)
+	}
 	if inner, ok := cur.Children[*addr]; ok {
 		return z.AddDescendent(inner, depth+1, newZ)
-	} else if *addr == newZ.Address {
-		return cur.AddChild(newZ)
-	} else {
-		return fmt.Errorf("invalid address for new zettel: %s", newZ.Address)
 	}
+	return fmt.Errorf("invalid address for new zettel: %s", newZ.Address)
+}
+
+// `GetDescendentByAddress` uses the `Ancestry` of the given Address to
+// navigate the tree of the receiver Zettel, finding the Zettel with the matching Address.
+// Returns:
+//	- pointer to the matching Zettel if it is found, or `nil` if not
+//	- error if the given address does not match a Zettel, or `nil` if the Zettel was found
+func (z *Zettel) GetDescendentByAddress(address Address) (*Zettel, error) {
+	if address == z.Address {
+		return z, nil
+	}
+	descendent := z
+	for _, ancestor := range address.Ancestry() {
+		if c, ok := descendent.Children[ancestor]; ok {
+			descendent = c
+		} else {
+			return nil, fmt.Errorf("address '%v' not found", address)
+		}
+	}
+	return descendent, nil
 }

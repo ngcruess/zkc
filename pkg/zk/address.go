@@ -12,10 +12,10 @@ var re *regexp.Regexp // lazy loaded
 
 type Address string
 
-// AncestorAtDepth returns the Address which is the receiver Address'
+// `AncestorAtDepth` returns the Address which is the receiver Address'
 // ancestor at the given tree depth.
 // Depth 0 is the global structure parent, and Depth 1 is the true semantic
-// origin of this Address' ancestry
+// origin of this Address' ancestry.
 // Returns:
 // 	- Address or `nil` if the specified depth exceeds the depth of the received Address
 // 	- error if the specified depth exceeds the depth of the received Address or `nil` if
@@ -37,7 +37,7 @@ func (a Address) AncestorAtDepth(depth int) (*Address, error) {
 	return &address, nil
 }
 
-// Parts returns an array of component parts, basically layers, of an address
+// `Parts` returns an array of component parts, basically layers, of an address
 // in order.
 //
 // Example: "1a42b7".Parts = ["1", "a", "42", "b", "7"]
@@ -48,7 +48,7 @@ func (a Address) Parts() []string {
 	return re.FindAllString(string(a), -1)
 }
 
-// Ancestry returns an array of all Addresses preceeding this one in the
+// `Ancestry` returns an array of all Addresses preceeding this one in the
 // family tree in order. The first item is the trunk of the tree, while the
 // last one will be the receiving Address itself.
 //
