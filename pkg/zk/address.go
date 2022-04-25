@@ -16,8 +16,6 @@ type Address string
 
 // `AncestorAtDepth` returns the Address which is the receiver Address'
 // ancestor at the given tree depth.
-// Depth 0 is the global structure parent, and Depth 1 is the true semantic
-// origin of this Address' ancestry.
 // Returns:
 // 	- Address or `nil` if the specified depth exceeds the depth of the received Address
 // 	- error if the specified depth exceeds the depth of the received Address or `nil` if
@@ -27,15 +25,11 @@ type Address string
 func (a Address) AncestorAtDepth(depth int) (*Address, error) {
 	// Generation 0 is the  global parent, the content-less structure Zettel
 	// used as the trunk of the Zettel tree.
-	if depth == 0 {
-		origin := Address("0")
-		return &origin, nil
-	}
 	ancestors := a.Ancestry()
 	if depth > len(ancestors) {
 		return nil, fmt.Errorf("depth %d exceeds depth of this address", depth)
 	}
-	address := ancestors[depth-1]
+	address := ancestors[depth]
 	return &address, nil
 }
 
@@ -93,8 +87,8 @@ func (a Address) NewChild() Address {
 	last := parts[len(parts)-1]
 	// the current part is numeric so switch to an alphabetical part
 	if _, err := strconv.Atoi(last); err == nil {
-		return Address(strings.Join(parts[:len(parts)-1], "") + "a")
+		return Address(strings.Join(parts, "") + "a")
 	}
 	// the current part is alphabetical so switch to numeric
-	return Address(strings.Join(parts[:len(parts)-1], "") + "1")
+	return Address(strings.Join(parts, "") + "1")
 }

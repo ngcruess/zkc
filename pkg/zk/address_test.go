@@ -51,24 +51,24 @@ func TestAncestorAtDepth(t *testing.T) {
 		{
 			address:  zk.Address("1"),
 			depth:    0,
-			ancestor: zk.Address("0"),
-			fails:    false,
-		},
-		{
-			address:  zk.Address("1a42b7"),
-			depth:    1,
 			ancestor: zk.Address("1"),
 			fails:    false,
 		},
 		{
 			address:  zk.Address("1a42b7"),
-			depth:    2,
+			depth:    1,
 			ancestor: zk.Address("1a"),
 			fails:    false,
 		},
 		{
 			address:  zk.Address("1a42b7"),
-			depth:    5,
+			depth:    2,
+			ancestor: zk.Address("1a42"),
+			fails:    false,
+		},
+		{
+			address:  zk.Address("1a42b7"),
+			depth:    4,
 			ancestor: zk.Address("1a42b7"),
 			fails:    false,
 		},
@@ -111,7 +111,7 @@ func TestAncestry(t *testing.T) {
 	assert.Equal(t, expected, ancestors)
 }
 
-func TestIncrement(t *testing.T) {
+func TestNextSibling(t *testing.T) {
 	// SETUP
 	type originalIncrementedPair struct {
 		original zk.Address
@@ -147,7 +147,35 @@ func TestIncrement(t *testing.T) {
 	for _, test := range tests {
 		t.Run(string(test.original), func(t *testing.T) {
 			// ACTION
-			actual := test.original.Increment()
+			actual := test.original.NextSibling()
+
+			// ASSERTION
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestNewChild(t *testing.T) {
+	// SETUP
+	type originalIncrementedPair struct {
+		original zk.Address
+		expected zk.Address
+	}
+	tests := []originalIncrementedPair{
+		{
+			original: zk.Address("1"),
+			expected: zk.Address("1a"),
+		},
+		{
+			original: zk.Address("1a"),
+			expected: zk.Address("1a1"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(string(test.original), func(t *testing.T) {
+			// ACTION
+			actual := test.original.NewChild()
 
 			// ASSERTION
 			assert.Equal(t, test.expected, actual)

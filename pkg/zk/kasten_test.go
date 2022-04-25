@@ -1,65 +1,108 @@
 package zk_test
 
-// func TestInsertIntoSemanticOrder(t *testing.T) {
-// 	// SETUP
-// 	k := zk.NewKasten("test")
+import (
+	"testing"
 
-// 	type InsertTestConfig struct {
-// 		name          string
-// 		semanticOrder []zk.Address
-// 		insert        *zk.Zettel
-// 		expected      []zk.Address
-// 	}
+	"github.com/stretchr/testify/assert"
+	"github.com/zkc/pkg/zk"
+)
 
-// 	tests := []InsertTestConfig{
-// 		{
-// 			name:          "0 -> 0, 1",
-// 			semanticOrder: []zk.Address{"0"},
-// 			insert:        newSemanticInsertFriendlyZettel(zk.Address("1"), zk.Address("0")),
-// 			expected:      []zk.Address{"0", "1"},
-// 		},
-// 		{
-// 			name:          "0, 1 -> 0, 1, 2",
-// 			semanticOrder: []zk.Address{"0", "1"},
-// 			insert:        newSemanticInsertFriendlyZettel(zk.Address("2"), zk.Address("1")),
-// 			expected:      []zk.Address{"0", "1", "2"},
-// 		},
-// 		{
-// 			name:          "0, 1, 2 -> 0, 1, 1a, 2",
-// 			semanticOrder: []zk.Address{"0", "1", "2"},
-// 			insert:        newSemanticInsertFriendlyZettel(zk.Address("1a"), zk.Address("1")),
-// 			expected:      []zk.Address{"0", "1", "1a", "2"},
-// 		},
-// 		{
-// 			name:          "0, 1, 1a, 2, 2a, 3, 4, 5 -> 0, 1, 1a, 2, 2a, 2b, 3, 4, 5",
-// 			semanticOrder: []zk.Address{"0", "1", "1a", "2", "2a", "3", "4", "5"},
-// 			insert:        newSemanticInsertFriendlyZettel(zk.Address("2b"), zk.Address("2a")),
-// 			expected:      []zk.Address{"0", "1", "1a", "2", "2a", "2b", "3", "4", "5"},
-// 		},
-// 	}
+func TestInsertIntoSemanticOrderEmptyOrder(t *testing.T) {
+	// SETUP
+	k := zk.NewKasten("test")
 
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			k.SemanticOrder = test.semanticOrder
-// 			k.Zettels = test.zettels
+	// ACTION
+	k.InsertIntoSemanticOrder(&zk.Zettel{
+		Address: zk.Address("1"),
+	})
 
-// 			// ACTION
-// 			err := k.InsertIntoSemanticOrder(test.insert)
+	// ASSERTION
+	assert.Equal(t, []zk.Address{zk.Address("1")}, k.SemanticOrder)
+}
 
-// 			// ASSERTION
-// 			assert.NoError(t, err)
-// 			assert.Equal(t, test.expected, k.SemanticOrder)
-// 		})
-// 	}
-// }
+func TestInsertIntoSemanticOrderNewMajor(t *testing.T) {
+	// SETUP
+	k := zk.NewKasten("test")
+	k.Zettels = map[zk.Address]*zk.Zettel{
+		zk.Address("1"): {
+			Address: zk.Address("1"),
+		},
+		zk.Address("2"): {
+			Address: zk.Address("2"),
+		},
+	}
+	k.SemanticOrder = []zk.Address{
+		zk.Address("1"),
+		zk.Address("2"),
+	}
 
-// func newSemanticInsertFriendlyZettel(a zk.Address, parentLast zk.Address) *zk.Zettel {
-// 	if parent := "" {
+	expected := []zk.Address{
+		zk.Address("1"),
+		zk.Address("2"),
+		zk.Address("3"),
+	}
 
-// 	}
-// 	child := &zk.Zettel{
-// 		Address: a,
-// 		Parent:  parent,
-// 	}
-// 	return child
-// }
+	// ACTION
+	k.InsertIntoSemanticOrder(&zk.Zettel{
+		Address: zk.Address("3"),
+	})
+
+	// ASSERTION
+	assert.Equal(t, expected, k.SemanticOrder)
+}
+
+func TestInsertIntoSemanticOrderChildInMiddle(t *testing.T) {
+	largestChild := zk.Address("2b")
+	parent := zk.Address("2")
+
+	k := zk.NewKasten("test")
+	k.Zettels = map[zk.Address]*zk.Zettel{
+		zk.Address("1"): {
+			Address: zk.Address("1"),
+		},
+		zk.Address("2"): {
+			Address:             zk.Address("2"),
+			LargestChildAddress: &largestChild,
+			Children: map[zk.Address]struct{}{
+				zk.Address("2a"): {},
+				zk.Address("2b"): {},
+			},
+		},
+		zk.Address("2a"): {
+			Address: zk.Address("2a"),
+			Parent:  &parent,
+		},
+		zk.Address("3"): {
+			Address: zk.Address("3"),
+		},
+		zk.Address("4"): {
+			Address: zk.Address("4"),
+		},
+	}
+	k.SemanticOrder = []zk.Address{
+		zk.Address("1"),
+		zk.Address("2"),
+		zk.Address("2a"),
+		zk.Address("3"),
+		zk.Address("4"),
+	}
+
+	expected := []zk.Address{
+		zk.Address("1"),
+		zk.Address("2"),
+		zk.Address("2a"),
+		zk.Address("2b"),
+		zk.Address("3"),
+		zk.Address("4"),
+	}
+
+	// ACTION
+	k.InsertIntoSemanticOrder(&zk.Zettel{
+		Address:             zk.Address("2b"),
+		Parent:              &parent,
+		LargestChildAddress: &largestChild,
+	})
+
+	// ASSERTION
+	assert.Equal(t, expected, k.SemanticOrder)
+}

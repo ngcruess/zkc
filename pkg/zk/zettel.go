@@ -1,7 +1,6 @@
 package zk
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -21,36 +20,31 @@ type Zettel struct {
 // to the tracking Kasten or other metastore
 type Callback func(z *Zettel) error
 
-// The Callback for adding a new Zettel
-var newCallback Callback
-
 // The Callback for editing a Zettel's content
 var editCallback Callback
-
-func RegisterNewCallback(c Callback) {
-	newCallback = c
-}
 
 func RegisterEditCallback(c Callback) {
 	editCallback = c
 }
 
-// `AddChildWithAddress` adds a child to a Zettel, making sure the specified Address is not already occupied
+// `AddChild` determines the next child Address for this Zettel then adds it
+// to the Zettel's Children and updates the LargestChildAddress value
 // This is where the uniqueness of Addresses within a collection is enforced.
 // Returns:
-// 	- error if the Address of the given Zettel is not unique, or `nil`
-func (z *Zettel) AddChildWithAddress(zettel *Zettel) error {
-	if z.Children == nil {
+// 	- the new Address
+func (z *Zettel) AddChild() Address {
+	var address Address
+	if z.LargestChildAddress != nil {
+		address = z.LargestChildAddress.NextSibling()
 		z.Children = map[Address]struct{}{
-			zettel.Address: {},
+			address: {},
 		}
 	} else {
-		if _, ok := z.Children[zettel.Address]; ok {
-			return fmt.Errorf("zettel already exists with address %v", zettel.Address)
-		}
-		z.Children[zettel.Address] = struct{}{}
+		address = z.NewChild()
+		z.Children[address] = struct{}{}
 	}
-	return newCallback(zettel)
+	z.LargestChildAddress = &address
+	return address
 }
 
 // `NewZettel` creates a new Zettel with the given Address and body, automatically
