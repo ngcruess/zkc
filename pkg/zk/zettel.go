@@ -17,6 +17,24 @@ type Zettel struct {
 	LatestChildAddress Address             `json:"latest_child_address"`
 }
 
+// Callbacks are used to make sure Zettel events are reported
+// to the tracking Kasten or other metastore
+type Callback func(z *Zettel) error
+
+// The Callback for adding a new Zettel
+var newCallback Callback
+
+// The Callback for editing a Zettel's content
+var editCallback Callback
+
+func RegisterNewCallback(c Callback) {
+	newCallback = c
+}
+
+func RegisterEditCallback(c Callback) {
+	editCallback = c
+}
+
 // `AddChildWithAddress` adds a child to a Zettel, making sure the specified Address is not already occupied
 // This is where the uniqueness of Addresses within a collection is enforced.
 // Returns:
@@ -32,7 +50,7 @@ func (z *Zettel) AddChildWithAddress(zettel *Zettel) error {
 		}
 		z.Children[zettel.Address] = zettel
 	}
-	return nil
+	return newCallback(zettel)
 }
 
 // `NewChild` creates a Zettel and adds it to the Children of the receiving Zettel.

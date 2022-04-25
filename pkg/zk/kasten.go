@@ -12,8 +12,7 @@ import (
 //	Example: ["1", "1a", "1a1", "1a2", "1b", "2", "2a"]
 // Chronological Order: a flattened representation of the Zettel tree in descending chronological order.
 // 	This newest (most recently created) Address will be first, and the oldest will be last.
-// Key Zettel features are exposed here with wrapper methods that call their respective Zettel
-// implementations and also ensure the metadata fields of the Kasten are kept up to date.
+// Zettel callbacks are used to make sure the metastore is updated after Zettel events
 type Kasten struct {
 	Label              string    `json:"label"`
 	Origin             *Zettel   `json:"origin"`
@@ -33,7 +32,7 @@ type Kasten struct {
 func NewKasten(label string) *Kasten {
 	now := time.Now()
 	address := Address("0")
-	return &Kasten{
+	k := &Kasten{
 		Label: label,
 		Origin: &Zettel{
 			Address:            address,
@@ -46,16 +45,17 @@ func NewKasten(label string) *Kasten {
 		SemanticOrder:      []Address{address},
 		ChronologicalOrder: []Address{address},
 	}
-}
-
-func (k *Kasten) NewChild(body string, references string, related ...Address) (*Zettel, error) {
-	z, err := k.Origin.NewChild(body, references, related...)
-	if err == nil {
+	RegisterNewCallback(func(z *Zettel) error {
 		k.SemanticOrder, _ = InsertIntoSemanticOrder(k.SemanticOrder, z)
 		k.ChronologicalOrder = append([]Address{z.Address}, k.ChronologicalOrder...)
-		k.UpdatedAt = time.Now()
-	}
-	return z, err
+		k.UpdatedAt = z.UpdatedAt
+		return nil
+	})
+	RegisterEditCallback(func(z *Zettel) error {
+		k.UpdatedAt = z.UpdatedAt
+		return nil
+	})
+	return k
 }
 
 func InsertIntoSemanticOrder(semanticOrder []Address, z *Zettel) ([]Address, error) {
