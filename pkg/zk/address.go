@@ -65,16 +65,16 @@ func (a Address) Ancestry() []Address {
 	return ancestors
 }
 
-// `Increment` returns a new Address which is one larger, in Zettel semantics, than
+// `NextSibling` returns a new Address which is one larger, in Zettel semantics, than
 // the receiving Address.
 // Returns:
 //	- the new Address
 // Examples:
-// 	- "1".Increment = "2"
-// 	- "1a".Increment = "1b"
-// 	- "1z".Increment = "1za"
-// 	- "1a47".Increment = "1a48"
-func (a Address) Increment() Address {
+// 	- "1".NextSibling = "2"
+// 	- "1a".NextSibling = "1b"
+// 	- "1z".NextSibling = "1za"
+// 	- "1a47".NextSibling = "1a48"
+func (a Address) NextSibling() Address {
 	parts := a.Parts()
 	last := parts[len(parts)-1]
 	if strings.HasSuffix(last, "z") {
@@ -86,4 +86,15 @@ func (a Address) Increment() Address {
 	}
 	incremented := last[len(last)-1] + 1
 	return Address(string(a)[:len(a)-1] + string(incremented))
+}
+
+func (a Address) NewChild() Address {
+	parts := a.Parts()
+	last := parts[len(parts)-1]
+	// the current part is numeric so switch to an alphabetical part
+	if _, err := strconv.Atoi(last); err == nil {
+		return Address(strings.Join(parts[:len(parts)-1], "") + "a")
+	}
+	// the current part is alphabetical so switch to numeric
+	return Address(strings.Join(parts[:len(parts)-1], "") + "1")
 }

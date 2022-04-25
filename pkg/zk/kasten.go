@@ -14,12 +14,12 @@ import (
 // 	This newest (most recently created) Address will be first, and the oldest will be last.
 // Zettel callbacks are used to make sure the metastore is updated after Zettel events
 type Kasten struct {
-	Label              string    `json:"label"`
-	Origin             *Zettel   `json:"origin"`
-	CreatedAt          time.Time `json:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at"`
-	SemanticOrder      []Address `json:"semantic_order"`
-	ChronologicalOrder []Address `json:"chronological_order"`
+	Label              string              `json:"label"`
+	Zettels            map[Address]*Zettel `json:"zettels"`
+	CreatedAt          time.Time           `json:"created_at"`
+	UpdatedAt          time.Time           `json:"updated_at"`
+	SemanticOrder      []Address           `json:"semantic_order"`
+	ChronologicalOrder []Address           `json:"chronological_order"`
 }
 
 // `NewKasten` returns a new Kasten. The origin is the
@@ -31,22 +31,16 @@ type Kasten struct {
 //	- the new Kasten
 func NewKasten(label string) *Kasten {
 	now := time.Now()
-	address := Address("0")
 	k := &Kasten{
-		Label: label,
-		Origin: &Zettel{
-			Address:            address,
-			CreatedAt:          now,
-			UpdatedAt:          now,
-			LatestChildAddress: address,
-		},
+		Label:              label,
+		Zettels:            map[Address]*Zettel{},
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		SemanticOrder:      []Address{address},
-		ChronologicalOrder: []Address{address},
+		SemanticOrder:      []Address{},
+		ChronologicalOrder: []Address{},
 	}
 	RegisterNewCallback(func(z *Zettel) error {
-		k.SemanticOrder, _ = InsertIntoSemanticOrder(k.SemanticOrder, z)
+		k.InsertIntoSemanticOrder(z)
 		k.ChronologicalOrder = append([]Address{z.Address}, k.ChronologicalOrder...)
 		k.UpdatedAt = z.UpdatedAt
 		return nil
@@ -58,18 +52,49 @@ func NewKasten(label string) *Kasten {
 	return k
 }
 
-func InsertIntoSemanticOrder(semanticOrder []Address, z *Zettel) ([]Address, error) {
-	for i, a := range semanticOrder {
-		if a == z.Parent.LatestChildAddress {
-			if i == len(semanticOrder)-1 {
-				return append(semanticOrder, z.Address), nil
+func (k *Kasten) AddZettel(parent *Address, body string, references string, related ...Address) {
+	var address Address
+	if parent != nil {
+		largestSibling := k.Zettels[*parent].LargestChildAddress
+		if largestSibling != nil {
+			address = largestSibling.Increment()
+		} else {
+			address = parent.NewChild()
+		}
+		k.Zettels[address].LargestChildAddress = &address
+	} else {
+		address = k.NextMajorAddress()
+	}
+	z := NewZettel(address, parent, body, references, related...)
+	k.Zettels[z.Address] = z
+}
+
+func (k *Kasten) InsertIntoSemanticOrder(z *Zettel) error {
+	if z.Parent == nil {
+		k.SemanticOrder = append(k.SemanticOrder, z.Address)
+		return nil
+	}
+	for i, a := range k.SemanticOrder {
+		if a == *k.Zettels[*z.Parent].LargestChildAddress {
+			if i == len(k.SemanticOrder)-1 {
+				k.SemanticOrder = append(k.SemanticOrder, z.Address)
+				return nil
 			}
-			semanticOrder = append(semanticOrder[:i+1], semanticOrder[i:]...) // index < len(a)
-			semanticOrder[i+1] = z.Address
-			return semanticOrder, nil
+			k.SemanticOrder = append(k.SemanticOrder[:i+1], k.SemanticOrder[i:]...) // index < len(a)
+			k.SemanticOrder[i+1] = z.Address
+			return nil
 		}
 	}
 	// the only way for this to happen is that a Zettel's parent Zettel has not had it's
 	// LatestChildAddress set or has had it set to something invalid
-	return nil, fmt.Errorf("failed to insert address %v into semantic order", z.Address)
+	return fmt.Errorf("failed to insert address %v into semantic order", z.Address)
+}
+
+func (k *Kasten) NextMajorAddress() Address {
+	if len(k.SemanticOrder) == 0 {
+		return Address("1")
+	}
+	// Get the last Address in the semantic order, which is guaranteed to be the
+	// largest one, and increment generation 0
+	return k.SemanticOrder[len(k.SemanticOrder)-1].Ancestry()[0].Increment()
 }
