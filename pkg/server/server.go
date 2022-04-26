@@ -24,12 +24,14 @@ func NewServer() (*Server, error) {
 
 	m1 := gocui.ManagerFunc(func(g *gocui.Gui) error {
 		maxX, maxY := g.Size()
-		if v, err := g.SetView("hello", 0, 0, maxX/4-3, maxY, 0); err != nil {
+		if v, err := g.SetView("hello", 0, 0, maxX/8-7, maxY, 0); err != nil {
 			if !errors.Is(err, gocui.ErrUnknownView) {
 				return err
 			}
 
-			v.Editable = true
+			v.Highlight = true
+			v.SelBgColor = gocui.ColorGreen
+			v.SelFgColor = gocui.ColorBlack
 
 			if _, err := g.SetCurrentView("hello"); err != nil {
 				return err
