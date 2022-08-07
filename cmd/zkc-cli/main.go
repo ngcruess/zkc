@@ -1,15 +1,17 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/zkc/pkg/server"
+	"github.com/zkc/pkg/cui"
 )
 
 func main() {
-	server, err := server.NewServer()
+	server, err := cui.NewServer()
+
 	if err != nil {
-		log.Panic("sdfoksadfj")
+		fmt.Println(err)
 	}
+
 	server.Start()
 }
