@@ -16,3 +16,6 @@
 
 # Compiled binaries
 /zkc-cli
+
+# Example and reference files copied from other repos for convenience
+*_ex.go

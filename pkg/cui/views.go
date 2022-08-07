@@ -1,6 +1,6 @@
 package cui
 
-const IndexView = "index"
+const Index = "index"
 const Address = "address"
 const Body = "body"
 
@@ -22,7 +22,7 @@ type View struct {
 }
 
 var Views = map[string]View{
-	IndexView: {
+	Index: {
 		X0: Position{0, 0},
 		Y0: Position{0, 0},
 		X1: Position{0.15, 0},

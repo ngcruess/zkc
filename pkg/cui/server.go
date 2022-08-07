@@ -43,7 +43,7 @@ func NewServer() (*Server, error) {
 		return nil, err
 	}
 
-	if v, err := g.View(IndexView); err == nil {
+	if v, err := g.View(Index); err == nil {
 		v.Editor = gocui.DefaultEditor
 	}
 
