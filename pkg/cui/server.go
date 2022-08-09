@@ -79,3 +79,8 @@ func (s *Server) Start() error {
 
 	return s.g.MainLoop()
 }
+
+func LoadKasten(handle string) (*zk.Kasten, error) {
+	k, err := zk.LoadJsonFileKasten(handle)
+	return k, err
+}

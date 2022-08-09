@@ -10,12 +10,12 @@ type JsonFileKasten struct {
 	Kasten
 }
 
-func LoadJsonFileKasten(handle string) (*JsonFileKasten, error) {
+func LoadJsonFileKasten(handle string) (*Kasten, error) {
 	content, err := os.ReadFile(fmt.Sprintf("%s.json", handle))
 	if err != nil {
 		return nil, err
 	}
-	var k *JsonFileKasten
+	var k *Kasten
 	err = json.Unmarshal(content, k)
 
 	return k, err
