@@ -1,8 +1,13 @@
 package cui
 
-const Index = "index"
-const Address = "address"
-const Body = "body"
+import "github.com/awesome-gocui/gocui"
+
+const (
+	Index = "Index"
+	Title = "Title"
+	Body  = "Body"
+	Meta  = "Meta"
+)
 
 type Position struct {
 	// the position relative to the dimension of the terminal
@@ -15,30 +20,46 @@ type Position struct {
 }
 
 type View struct {
-	X0 Position
-	Y0 Position
-	X1 Position
-	Y1 Position
+	Title    string
+	X0       Position
+	Y0       Position
+	X1       Position
+	Y1       Position
+	Overlaps byte
 }
 
 var Views = map[string]View{
 	Index: {
-		X0: Position{0, 0},
-		Y0: Position{0, 0},
-		X1: Position{0.15, 0},
-		Y1: Position{1, 0},
+		Title:    Index,
+		X0:       Position{0, 0},
+		Y0:       Position{0, 0},
+		X1:       Position{0.15, 0},
+		Y1:       Position{1, -1},
+		Overlaps: gocui.RIGHT,
 	},
-	Address: {
-		X0: Position{0.15, 0},
-		Y0: Position{0, 0},
-		X1: Position{1, 0},
-		Y1: Position{0, 1},
+	Title: {
+		Title:    Title,
+		X0:       Position{0.15, 0},
+		Y0:       Position{0, 0},
+		X1:       Position{1, -1},
+		Y1:       Position{0, 2},
+		Overlaps: gocui.BOTTOM,
 	},
 	Body: {
-		X0: Position{0.15, 0},
-		Y0: Position{0, 1},
-		X1: Position{1, 0},
-		Y1: Position{1, 0},
+		Title:    Body,
+		X0:       Position{0.15, 0},
+		Y0:       Position{0, 2},
+		X1:       Position{1, -1},
+		Y1:       Position{1, -3},
+		Overlaps: gocui.TOP | gocui.BOTTOM,
+	},
+	Meta: {
+		Title:    Meta,
+		X0:       Position{0.15, 0},
+		Y0:       Position{1, -3},
+		X1:       Position{1, -1},
+		Y1:       Position{1, -1},
+		Overlaps: gocui.TOP,
 	},
 }
 

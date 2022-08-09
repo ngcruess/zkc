@@ -59,7 +59,7 @@ func Manager(g *gocui.Gui) error {
 	for name, view := range Views {
 		x0, y0, x1, y1 := view.getPositions(maxX, maxY)
 		// we don't need to overlap any views, so hardcode overlaps to 0
-		if v, err := g.SetView(name, x0, y0, x1, y1, 0); err != nil {
+		if v, err := g.SetView(name, x0, y0, x1, y1, view.Overlaps); err != nil {
 			if !errors.Is(err, gocui.ErrUnknownView) {
 				return err
 			}
@@ -67,6 +67,7 @@ func Manager(g *gocui.Gui) error {
 				return err
 			}
 			fmt.Fprintln(v, name)
+			v.Title = view.Title
 		}
 
 	}
