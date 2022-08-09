@@ -31,7 +31,7 @@ func RegisterEditCallback(c Callback) {
 // to the Zettel's Children and updates the LargestChildAddress value
 // This is where the uniqueness of Addresses within a collection is enforced.
 // Returns:
-// 	- the new Address
+//   - the new Address
 func (z *Zettel) AddChild() Address {
 	var address Address
 	if z.LargestChildAddress != nil {
@@ -51,7 +51,7 @@ func (z *Zettel) AddChild() Address {
 // setting the `CreatedAt` and `UpdatedAt` values to the current time in the
 // current time zone.
 // Returns:
-// 	- a pointer to the new Zettel
+//   - a pointer to the new Zettel
 func NewZettel(address Address, parent *Address, body string, references string, related ...Address) *Zettel {
 	newZ := Zettel{
 		Address:    address,

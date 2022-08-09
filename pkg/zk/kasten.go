@@ -1,15 +1,20 @@
 package zk
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 )
 
 // A `Kasten` is a container and metastore for the for the Zettel tree.
 // Semantic Order: a flattened representation of the Zettel tree in depth-first order.
+//
 //	Example: ["1", "1a", "1a1", "1a2", "1b", "2", "2a"]
+//
 // Chronological Order: a flattened representation of the Zettel tree in descending chronological order.
-// 	This newest (most recently created) Address will be first, and the oldest will be last.
+//
+//	This newest (most recently created) Address will be first, and the oldest will be last.
 type Kasten struct {
 	Label              string              `json:"label"`
 	Zettels            map[Address]*Zettel `json:"zettels"`
@@ -23,7 +28,7 @@ type Kasten struct {
 // CreatedAt and UpdatedAt will both be the current time in the
 // current time zone.
 // Returns:
-//	- the new Kasten
+//   - the new Kasten
 func NewKasten(label string) *Kasten {
 	now := time.Now()
 	return &Kasten{
@@ -81,4 +86,16 @@ func (k *Kasten) NextMajorAddress() Address {
 	// Get the last Address in the semantic order, which is guaranteed to be the
 	// largest one, and increment generation 0
 	return k.SemanticOrder[len(k.SemanticOrder)-1].Ancestry()[0].NextSibling()
+}
+
+func (k *Kasten) PersistZettel(z *Zettel) error {
+	content, err := json.MarshalIndent(z, "", "    ")
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(fmt.Sprintf("%s.json", z.Address), content, os.FileMode(0644))
+	if err != nil {
+		return err
+	}
+	return nil
 }
