@@ -1,11 +1,15 @@
 package zk
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 )
+
+type PersitingKasten interface {
+	PersistMeta() error
+	PersistZettel() error
+	RetrieveZettel(Address) (*Zettel, error)
+}
 
 // A `Kasten` is a container and metastore for the for the Zettel tree.
 // Semantic Order: a flattened representation of the Zettel tree in depth-first order.
@@ -17,7 +21,7 @@ import (
 //	This newest (most recently created) Address will be first, and the oldest will be last.
 type Kasten struct {
 	Label              string              `json:"label"`
-	Zettels            map[Address]*Zettel `json:"zettels"`
+	Zettels            map[Address]*Zettel `json:"-"`
 	CreatedAt          time.Time           `json:"created_at"`
 	UpdatedAt          time.Time           `json:"updated_at"`
 	SemanticOrder      []Address           `json:"semantic_order"`
@@ -86,27 +90,4 @@ func (k *Kasten) NextMajorAddress() Address {
 	// Get the last Address in the semantic order, which is guaranteed to be the
 	// largest one, and increment generation 0
 	return k.SemanticOrder[len(k.SemanticOrder)-1].Ancestry()[0].NextSibling()
-}
-
-func (k *Kasten) PersistZettel(z *Zettel) error {
-	content, err := json.MarshalIndent(z, "", "    ")
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s.json", z.Address), content, os.FileMode(0644))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (k *Kasten) RetrieveZettel(address Address) (*Zettel, error) {
-	content, err := os.ReadFile(fmt.Sprintf("%s.json", address))
-	if err != nil {
-		return nil, err
-	}
-	var z *Zettel
-	err = json.Unmarshal(content, z)
-
-	return z, err
 }
