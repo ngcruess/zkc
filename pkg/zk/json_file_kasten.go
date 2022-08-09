@@ -10,6 +10,17 @@ type JsonFileKasten struct {
 	Kasten
 }
 
+func LoadJsonFileKasten(handle string) (*JsonFileKasten, error) {
+	content, err := os.ReadFile(fmt.Sprintf("%s.json", handle))
+	if err != nil {
+		return nil, err
+	}
+	var k *JsonFileKasten
+	err = json.Unmarshal(content, k)
+
+	return k, err
+}
+
 func (k *JsonFileKasten) PersistMeta() error {
 	content, err := json.MarshalIndent(k, "", "    ")
 	if err != nil {
