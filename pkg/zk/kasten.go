@@ -99,3 +99,14 @@ func (k *Kasten) PersistZettel(z *Zettel) error {
 	}
 	return nil
 }
+
+func (k *Kasten) RetrieveZettel(address Address) (*Zettel, error) {
+	content, err := os.ReadFile(fmt.Sprintf("%s.json", address))
+	if err != nil {
+		return nil, err
+	}
+	var z *Zettel
+	err = json.Unmarshal(content, z)
+
+	return z, err
+}
